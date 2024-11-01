@@ -4,64 +4,42 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Winter Arc Challenge Tracker</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Poppins:wght@600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        
         body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #121212;
-            color: #eeeeee;
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            margin: 0;
+            padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            min-height: 100vh;
-            padding: 20px;
-            justify-content: center;
-            transition: all 0.3s ease-in-out;
         }
 
         h1 {
-            color: #f05454;
-            text-shadow: 2px 2px 15px rgba(255, 17, 17, 0.8);
+            color: #4caf50;
+            text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
             margin-bottom: 20px;
-            font-size: 3rem;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            animation: flicker 1.5s infinite alternate;
-        }
-
-        @keyframes flicker {
-            0% { opacity: 1; }
-            100% { opacity: 0.7; }
         }
 
         #dateTime {
-            font-size: 1.2rem;
+            font-size: 16px;
             margin-bottom: 20px;
-            color: #aaaaaa;
-            letter-spacing: 1.5px;
+            color: #666;
         }
 
         #currentDay {
-            font-size: 2rem;
+            font-size: 24px;
             font-weight: bold;
             margin: 10px 0;
-            background: linear-gradient(to right, #f05454, #30475e);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            text-shadow: none;
         }
 
         #progressBarContainer {
             width: 100%;
             max-width: 800px;
-            background-color: #393e46;
-            border-radius: 15px;
+            background-color: #ddd;
+            border-radius: 5px;
             overflow: hidden;
             margin: 20px 0;
         }
@@ -69,80 +47,68 @@
         #progressBar {
             width: 0;
             height: 30px;
-            background-color: #f05454;
+            background-color: #4caf50;
             text-align: center;
             line-height: 30px;
             color: white;
-            transition: width 0.7s ease;
+            transition: width 0.5s;
         }
 
         form {
-            background: #222831;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             width: 100%;
             max-width: 800px;
             margin: 0 auto;
-            transition: transform 0.3s ease;
-        }
-
-        form:hover {
-            transform: scale(1.05);
         }
 
         input, textarea, select {
             margin-bottom: 15px;
-            padding: 12px;
-            font-size: 1rem;
-            border: 2px solid #f05454;
-            border-radius: 5px;
-            background-color: #393e46;
-            color: #eeeeee;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
             width: 100%;
+            box-sizing: border-box;
         }
 
         button, a {
-            padding: 15px;
-            background-color: #f05454;
+            padding: 12px;
+            background-color: #4caf50;
             color: white;
             border: none;
-            border-radius: 5px;
+            border-radius: 4px;
             cursor: pointer;
             text-align: center;
             flex: 1;
-            margin: 10px 5px;
-            transition: background-color 0.4s ease;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            box-shadow: 0 5px 15px rgba(240, 84, 84, 0.4);
+            margin: 5px;
+            transition: background-color 0.3s ease;
         }
 
         button:hover, a:hover {
-            background-color: #ff7979;
-            transform: translateY(-2px);
+            background-color: #45a049;
         }
 
         .button-container {
             display: flex;
             justify-content: space-between;
-            margin-top: 20px;
+            margin-top: 10px;
         }
 
         .summary {
-            background: #222831;
-            padding: 20px;
-            border-radius: 10px;
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
             width: 100%;
             max-width: 800px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             margin: 20px 0;
         }
 
         .summary div {
-            margin: 10px 0;
-            font-size: 1.2rem;
+            margin: 5px 0;
         }
 
         @media (max-width: 600px) {
@@ -201,10 +167,8 @@
     </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <script>
-        // Your JavaScript code for saving progress, generating PDF, etc.
+        // Your JavaScript code here
         let currentDay = 1; // Start from Day 1
         const startDate = new Date('2024-11-02'); // Starting date
         let progressData = JSON.parse(localStorage.getItem('progressData')) || [];
@@ -306,79 +270,19 @@
         }
 
         // Function to generate PDF
-function generatePDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
+        function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
 
-    doc.setFont("helvetica", "normal");
-    doc.text("Winter Arc Challenge Progress", 20, 10);
-    doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, 20);
-    
-    // Summary of total hours studied
-    const totalHours = progressData.reduce((sum, entry) => sum + entry.hoursStudied, 0);
-    const totalWorkouts = progressData.filter(entry => entry.workoutDetails).length;
-    const averageRating = (progressData.reduce((sum, entry) => sum + entry.rating, 0) / progressData.length).toFixed(2) || 0;
+            doc.setFont("helvetica", "normal");
+            doc.text("Winter Arc Challenge Progress", 20, 10);
+            doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, 20);
+            doc.text(`Total Hours Studied: ${progressData.reduce((sum, entry) => sum + entry.hoursStudied, 0)}`, 20, 30);
+            doc.text(`Total Workouts Completed: ${progressData.filter(entry => entry.workoutDetails).length}`, 20, 40);
+            doc.text(`Average Daily Rating: ${(progressData.reduce((sum, entry) => sum + entry.rating, 0) / progressData.length).toFixed(2) || 0}`, 20, 50);
 
-    doc.text(`Total Hours Studied: ${totalHours}`, 20, 30);
-    doc.text(`Total Workouts Completed: ${totalWorkouts}`, 20, 40);
-    doc.text(`Average Daily Rating: ${averageRating}`, 20, 50);
-
-    // Detailed summary of daily progress
-    doc.text("Detailed Daily Progress:", 20, 60);
-    let yPosition = 70;
-    progressData.forEach(entry => {
-        doc.text(`Day ${entry.day}: ${entry.hoursStudied} hours, Mood: ${entry.moodTracker}, Rating: ${entry.rating}`, 20, yPosition);
-        yPosition += 10; // Move down for the next entry
-    });
-
-    // Create a chart for progress over time
-    const chartCanvas = document.createElement('canvas');
-    const chartCtx = chartCanvas.getContext('2d');
-    chartCanvas.width = 400; // Set width for the chart
-    chartCanvas.height = 200; // Set height for the chart
-
-    const days = progressData.map(entry => entry.day);
-    const hoursStudied = progressData.map(entry => entry.hoursStudied);
-
-    const chartData = {
-        labels: days,
-        datasets: [{
-            label: 'Hours Studied',
-            data: hoursStudied,
-            borderColor: 'rgba(240, 84, 84, 1)',
-            backgroundColor: 'rgba(240, 84, 84, 0.2)',
-            fill: true,
-        }]
-    };
-
-    const myChart = new Chart(chartCtx, {
-        type: 'line',
-        data: chartData,
-        options: {
-            responsive: false,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    title: {
-                        display: true,
-                        text: 'Hours Studied'
-                    }
-                },
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Days'
-                    }
-                }
-            }
+            doc.save('Winter_Arc_Challenge_Progress.pdf');
         }
-    });
-
-    // Save the chart as an image
-    doc.addImage(chartCanvas.toDataURL('image/png'), 'PNG', 20, yPosition, 170, 80); // Adjust position and size
-    doc.save('Winter_Arc_Challenge_Progress.pdf');
-}
-
 
         // Function to update the current day
         function updateCurrentDay() {
