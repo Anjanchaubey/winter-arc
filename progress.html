@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Progress Tracker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+        header {
+            background-color: #222;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background-color: white;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #007bff;
+            color: white;
+        }
+        td {
+            word-wrap: break-word; /* Prevent long words from breaking the layout */
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            table, thead, tbody, th, td, tr {
+                display: block;
+            }
+            th {
+                display: none; /* Hide table headers on small screens */
+            }
+            tr {
+                margin-bottom: 15px; /* Add space between table rows */
+            }
+            td {
+                display: flex;
+                justify-content: space-between;
+                padding: 8px;
+                text-align: right;
+                position: relative;
+                padding-left: 50%;
+                border-bottom: 1px solid #ddd;
+            }
+            td::before {
+                content: attr(data-label); /* Add label before each cell */
+                position: absolute;
+                left: 10px;
+                top: 8px;
+                font-weight: bold;
+                text-align: left;
+            }
+        }
+
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 1.5rem; /* Reduce font size for header */
+            }
+            button {
+                width: 100%; /* Full-width button on small screens */
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Your Progress Tracker</h1>
+    </header>
+
+    <h2>Recorded Progress</h2>
+    <table id="progressTable">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Hours Studied</th>
+                <th>Workout Details</th>
+                <th>Diet Notes</th>
+                <th>Mood/Reflections</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Progress entries will be added here dynamically -->
+        </tbody>
+    </table>
+
+    <button onclick="window.history.back()">Back to Main</button> <!-- Button to go back to the main page -->
+
+    <script>
+        // Function to load progress data from localStorage
+        function loadProgress() {
+            const progressData = JSON.parse(localStorage.getItem('progressData')) || [];
+            const tableBody = document.getElementById('progressTable').querySelector('tbody');
+
+            progressData.forEach(entry => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td data-label="Date">${entry.date}</td>
+                    <td data-label="Hours Studied">${entry.hoursStudied}</td>
+                    <td data-label="Workout Details">${entry.workoutDetails}</td>
+                    <td data-label="Diet Notes">${entry.dietNotes}</td>
+                    <td data-label="Mood/Reflections">${entry.moodReflections}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Call loadProgress function on page load
+        window.onload = loadProgress;
+    </script>
+</body>
+</html>

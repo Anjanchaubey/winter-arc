@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Winter Arc Challenge Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            color: #4caf50;
+            text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+
+        #dateTime {
+            font-size: 16px;
+            margin-bottom: 20px;
+            color: #666;
+        }
+
+        #currentDay {
+            font-size: 24px;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        #progressBarContainer {
+            width: 100%;
+            max-width: 800px;
+            background-color: #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        #progressBar {
+            width: 0;
+            height: 30px;
+            background-color: #4caf50;
+            text-align: center;
+            line-height: 30px;
+            color: white;
+            transition: width 0.5s;
+        }
+
+        form {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        input, textarea, select {
+            margin-bottom: 15px;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        button, a {
+            padding: 12px;
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-align: center;
+            flex: 1;
+            margin: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover, a:hover {
+            background-color: #45a049;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        .summary {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 800px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin: 20px 0;
+        }
+
+        .summary div {
+            margin: 5px 0;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+
+            form {
+                width: 100%;
+            }
+
+            .button-container {
+                flex-direction: column;
+            }
+
+            button, a {
+                margin-bottom: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Winter Arc Challenge Tracker</h1>
+    <div id="dateTime"></div>
+    <div id="currentDay">Day 1</div>
+
+    <div id="progressBarContainer">
+        <div id="progressBar">0%</div>
+    </div>
+    <div id="progressPercentage">0%</div>
+
+    <div class="summary">
+        <div id="summaryHours">Total Hours Studied: 0</div>
+        <div id="summaryWorkouts">Total Workouts Completed: 0</div>
+        <div id="summaryRating">Average Daily Rating: 0</div>
+    </div>
+
+    <form id="arcForm">
+        <input type="number" id="hoursStudied" placeholder="Hours Studied" required />
+        <textarea id="workoutDetails" placeholder="Workout Details"></textarea>
+        <textarea id="dietNotes" placeholder="Diet Notes"></textarea>
+        <select id="moodTracker">
+            <option value="">Select Mood</option>
+            <option value="happy">Happy</option>
+            <option value="neutral">Neutral</option>
+            <option value="sad">Sad</option>
+        </select>
+        <textarea id="moodReflections" placeholder="Mood Reflections"></textarea>
+        <button type="button" onclick="saveProgress()">Save Progress</button>
+    </form>
+
+    <div class="button-container">
+        <button id="pdfButton" onclick="generatePDF()">Download PDF</button>
+        <a id="redirectButton" href="progress.html">Go to Progress Page</a>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script>
+        // Your JavaScript code here
+        let currentDay = 1; // Start from Day 1
+        const startDate = new Date('2024-11-02'); // Starting date
+        let progressData = JSON.parse(localStorage.getItem('progressData')) || [];
+
+        // Function to save progress
+        function saveProgress() {
+            const hoursStudied = parseFloat(document.getElementById('hoursStudied').value);
+            const workoutDetails = document.getElementById('workoutDetails').value;
+            const dietNotes = document.getElementById('dietNotes').value;
+            const moodTracker = document.getElementById('moodTracker').value;
+            const moodReflections = document.getElementById('moodReflections').value;
+
+            // Validate input
+            if (isNaN(hoursStudied) || hoursStudied < 5) {
+                alert('You must study at least 5 hours.');
+                return;
+            }
+            if (hoursStudied > 24) {
+                alert('Hours studied cannot exceed 24.');
+                return;
+            }
+
+            // Check if today's entry already exists
+            if (progressData.length > 0 && progressData[progressData.length - 1].day === currentDay) {
+                alert('You have already saved progress for today. Please save progress for the next day.');
+                return; // Don't increment day if today's data is already saved
+            }
+
+            // Calculate the rating
+            let rating = calculateRating(hoursStudied, moodTracker);
+
+            // Create the entry
+            const entry = {
+                day: currentDay,
+                hoursStudied: hoursStudied,
+                workoutDetails: workoutDetails,
+                dietNotes: dietNotes,
+                moodTracker: moodTracker,
+                moodReflections: moodReflections,
+                rating: rating,
+                date: startDate.toLocaleDateString()
+            };
+
+            // Save the entry
+            progressData.push(entry);
+            localStorage.setItem('progressData', JSON.stringify(progressData));
+
+            // Clear input fields
+            document.getElementById('arcForm').reset();
+
+            // Increment the day and update if the entry is new
+            currentDay++;
+            document.getElementById('currentDay').textContent = `Day ${currentDay}`;
+            startDate.setDate(startDate.getDate() + 1); // Increment the date
+
+            // Update progress bar and summary
+            updateProgressBar();
+            updateSummary();
+        }
+
+        // Function to calculate daily rating
+        function calculateRating(hours, mood) {
+            let rating = 0;
+
+            // Simple rating logic
+            if (hours >= 5 && hours < 8) {
+                rating += 5; // Basic score for studying
+            } else if (hours >= 8) {
+                rating += 8; // Higher score for studying more
+            }
+
+            // Mood impact on rating
+            if (mood === 'happy') {
+                rating += 2; // Add points for being happy
+            } else if (mood === 'neutral') {
+                rating += 1; // Add a point for being neutral
+            } // Sad mood doesn't add any points
+
+            return Math.min(rating, 10); // Ensure the rating does not exceed 10
+        }
+
+        // Function to update progress bar
+        function updateProgressBar() {
+            const totalDays = 90; // Total days in the challenge
+            const progressPercentage = (progressData.length / totalDays) * 100;
+            document.getElementById('progressBar').style.width = `${progressPercentage}%`;
+            document.getElementById('progressPercentage').textContent = `${Math.round(progressPercentage)}%`;
+        }
+
+        // Function to update the summary
+        function updateSummary() {
+            const totalHours = progressData.reduce((sum, entry) => sum + entry.hoursStudied, 0);
+            const totalWorkouts = progressData.filter(entry => entry.workoutDetails).length;
+            const averageRating = (progressData.reduce((sum, entry) => sum + entry.rating, 0) / progressData.length).toFixed(2) || 0;
+
+            document.getElementById('summaryHours').textContent = `Total Hours Studied: ${totalHours}`;
+            document.getElementById('summaryWorkouts').textContent = `Total Workouts Completed: ${totalWorkouts}`;
+            document.getElementById('summaryRating').textContent = `Average Daily Rating: ${averageRating}`;
+        }
+
+        // Function to generate PDF
+        function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            doc.setFont("helvetica", "normal");
+            doc.text("Winter Arc Challenge Progress", 20, 10);
+            doc.text(`Date: ${new Date().toLocaleDateString()}`, 20, 20);
+            doc.text(`Total Hours Studied: ${progressData.reduce((sum, entry) => sum + entry.hoursStudied, 0)}`, 20, 30);
+            doc.text(`Total Workouts Completed: ${progressData.filter(entry => entry.workoutDetails).length}`, 20, 40);
+            doc.text(`Average Daily Rating: ${(progressData.reduce((sum, entry) => sum + entry.rating, 0) / progressData.length).toFixed(2) || 0}`, 20, 50);
+
+            doc.save('Winter_Arc_Challenge_Progress.pdf');
+        }
+
+        // Function to update the current day
+        function updateCurrentDay() {
+            const today = new Date();
+            const timeDiff = today - startDate;
+            currentDay = Math.floor(timeDiff / (1000 * 60 * 60 * 24)) + 1; // Calculate the current day based on the difference
+            document.getElementById('currentDay').textContent = `Day ${currentDay}`;
+            updateProgressBar();
+            updateSummary();
+        }
+
+        // Initialize
+        function init() {
+            updateCurrentDay();
+            const dateTimeElement = document.getElementById('dateTime');
+            setInterval(() => {
+                const now = new Date();
+                dateTimeElement.textContent = now.toLocaleString();
+            }, 1000);
+            updateSummary(); // Display the initial summary
+        }
+
+        init(); // Call the init function to start the app
+    </script>
+</body>
+</html>
